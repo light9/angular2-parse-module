@@ -1,7 +1,9 @@
 # angular2-parse-module
 
-# example class:
+### Example service
 
+
+```ts
 @Injectable()
 export class HeroService extends ParseService<Hero> {
 
@@ -17,3 +19,4 @@ export class HeroService extends ParseService<Hero> {
     return this.query(`where={"num":{"$gt": ${start}, "$lt": ${end}}}`);
   }
 }
+```
