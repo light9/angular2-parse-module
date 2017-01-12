@@ -1,5 +1,7 @@
 # angular2-parse-module
 
+Primitive Angular 2 module to access Parse.com backend.
+
 ## Install NPM
 
 ```sh
