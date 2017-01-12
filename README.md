@@ -1,5 +1,11 @@
 # angular2-parse-module
 
+## Install NPM
+
+```sh
+npm install git+https://github.com/peterantonyrausch/angular2-parse-module --save
+```
+
 ### Example service
 
 ```ts
