@@ -2,7 +2,6 @@
 
 ### Example service
 
-
 ```ts
 @Injectable()
 export class HeroService extends ParseService<Hero> {
@@ -21,7 +20,9 @@ export class HeroService extends ParseService<Hero> {
 }
 ```
 
-### Example class
+### Example model class
+
+```ts
 import {
   IParseInsertableEntity,
   IParseEntity,
@@ -34,3 +35,11 @@ export class Hero implements IParseEntity, IParseInsertableEntity, IParseUpdatab
   updatedAt: string;
   name: string;
 }
+```
+
+# Example service usage
+
+```ts
+this.heroService.getByNumRange(1, 5)
+      .then(heroes => this.heroes = heroes);
+```
