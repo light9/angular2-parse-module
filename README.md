@@ -37,7 +37,7 @@ export class Hero implements IParseEntity, IParseInsertableEntity, IParseUpdatab
 }
 ```
 
-# Example service usage
+### Example service usage
 
 ```ts
 this.heroService.getByNumRange(1, 5)
