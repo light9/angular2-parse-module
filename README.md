@@ -89,12 +89,12 @@ masterKey: process.env.MASTER_KEY || ‘myMasterKey’ // replace: 'myMasterKey'
 ```sh
 "c:\Program Files\MongoDB\Server\3.4\bin\mongod.exe"
 ```
-* [2] Run parse-server (default: http://localhost:1337/parse, configured in index.js)
+* [2] Run parse-server (default: `http://localhost:1337/parse`, configured in `index.js`)
 ```sh
 cd "C:\path\to\parse-server-example"
 npm start
 ```
-* [3] *(optional)* Run parse-dashboard (default: http://localhost:4040)
+* [3] *(optional)* Run parse-dashboard (default: `http://localhost:4040`)
 ```sh
 parse-dashboard --appId myAppId --masterKey myMasterKey --serverURL http://localhost:1337/parse 
 ```
