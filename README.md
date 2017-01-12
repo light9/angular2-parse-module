@@ -55,7 +55,7 @@ this.heroService.all();
 
 **************
 
-## Install Parse (Windows 10)
+## Install Parse `(parse.com)` (Windows 10)
 * [1] Download and install (NNF: next, next, finish) mongodb:
 https://www.mongodb.com/download-center#production;
 * * [1.1] Create folder `C:/data/db` if not exists;
