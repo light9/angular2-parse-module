@@ -1,6 +1,7 @@
 # angular2-parse-module
 
 Primitive Angular 2 module to access Parse.com backend.
+Parse REST docs: http://parseplatform.github.io/docs/rest/guide
 
 ## Install NPM
 
