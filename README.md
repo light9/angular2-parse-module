@@ -11,6 +11,12 @@ npm install git+https://github.com/peterantonyrausch/angular2-parse-module --sav
 ### Example service
 
 ```ts
+import {Injectable} from "@angular/core";
+import {Hero} from "../../viewmodels/hero";
+import {Http} from "@angular/http";
+import {environment} from "../../../environments/environment";
+import {ParseService} from "angular2-parse-module";
+
 @Injectable()
 export class HeroService extends ParseService<Hero> {
 
@@ -35,7 +41,7 @@ import {
   IParseInsertableEntity,
   IParseEntity,
   IParseUpdatableEntity
-} from "../components/parse/parse-entity";
+} from "angular2-parse-module";
 
 export class Hero implements IParseEntity, IParseInsertableEntity, IParseUpdatableEntity {
   objectId: string;
