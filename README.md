@@ -20,3 +20,17 @@ export class HeroService extends ParseService<Hero> {
   }
 }
 ```
+
+### Example class
+import {
+  IParseInsertableEntity,
+  IParseEntity,
+  IParseUpdatableEntity
+} from "../components/parse/parse-entity";
+
+export class Hero implements IParseEntity, IParseInsertableEntity, IParseUpdatableEntity {
+  objectId: string;
+  createdAt: string;
+  updatedAt: string;
+  name: string;
+}
