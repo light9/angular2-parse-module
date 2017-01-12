@@ -1,7 +1,7 @@
 import {Injectable} from "@angular/core";
 import {Http, Headers} from "@angular/http";
 import 'rxjs/add/operator/toPromise';
-import {IParseInsertableEntity, IParseUpdatableEntity} from "./parse-entity";
+import {IParseInsertableEntity, IParseUpdatableEntity} from "./parse_entity";
 
 @Injectable()
 export class ParseService<T> {
