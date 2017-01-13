@@ -52,7 +52,7 @@ export class ParseService<T> {
 
     var relations = this.makeRelationsOfObject(data);
 
-    return this.http.post(url, JSON.parse(data), { headers: this.credentialHeaders })
+    return this.http.post(url, data, { headers: this.credentialHeaders })
       .toPromise()
       .then(response => {
         var inserted = response.json() as IParseInsertableEntity;
@@ -110,7 +110,7 @@ export class ParseService<T> {
     const url = `${this.parseUrl}/classes/${this.object}/${objectId}`;
     console.log(`ParseService.addRelation.url: ${url}`);
 
-    return this.http.put(url, relation, { headers: this.credentialHeaders })
+    return this.http.put(url, JSON.parse(relation), { headers: this.credentialHeaders })
       .toPromise()
       .then(response => response.json() as IParseUpdatableEntity)
       .catch(this.handleError);
