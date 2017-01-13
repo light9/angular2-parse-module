@@ -2,7 +2,7 @@ export interface IParseEntity {
   objectId: string;
 }
 
-export interface IParseInsertableEntity {
+export interface IParseInsertableEntity extends IParseEntity {
   createdAt: string;
 }
 
