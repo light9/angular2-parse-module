@@ -1,7 +1,7 @@
 import { Injectable } from "@angular/core";
 import { Http, Headers } from "@angular/http";
 import 'rxjs/add/operator/toPromise';
-import { IParseInsertableEntity, IParseUpdatableEntity } from "./parse_entity";
+import { IParseInsertableEntity, IParseUpdatableEntity, IParseEntity } from "./parse_entity";
 
 @Injectable()
 export class ParseService<T> {
@@ -12,7 +12,7 @@ export class ParseService<T> {
     private parseUrl: string,
     private parseId: string,
     private parseKey: string,
-    private object: string) {
+    private objectType: string) {
     this.credentialHeaders = new Headers({
       'X-Parse-Application-Id': this.parseId,
       'X-Parse-REST-API-Key': this.parseKey
@@ -20,8 +20,9 @@ export class ParseService<T> {
   }
 
   all(): Promise<T[]> {
-    const url = `${this.parseUrl}/classes/${this.object}`;
+    const url = `${this.parseUrl}/classes/${this.objectType}`;
     console.log(`ParseService.all.url: ${url}`);
+
     return this.http.get(url, { headers: this.credentialHeaders })
       .toPromise()
       .then(response => response.json().results as T[])
@@ -29,8 +30,9 @@ export class ParseService<T> {
   }
 
   query(queryString: string): Promise<T[]> {
-    const url = `${this.parseUrl}/classes/${this.object}?${encodeURI(queryString)}`;
+    const url = `${this.parseUrl}/classes/${this.objectType}?${encodeURI(queryString)}`;
     console.log(`ParseService.query.url: ${url}`);
+
     return this.http.get(url, { headers: this.credentialHeaders })
       .toPromise()
       .then(response => response.json().results as T[])
@@ -38,8 +40,10 @@ export class ParseService<T> {
   }
 
   get(id: string): Promise<T> {
-    const url = `${this.parseUrl}/classes/${this.object}/${id}`;
+    const url = `${this.parseUrl}/classes/${this.objectType}/${id}`;
     console.log(`ParseService.get.url: ${url}`);
+
+
     return this.http.get(url, { headers: this.credentialHeaders })
       .toPromise()
       .then(response => response.json() as T)
@@ -47,7 +51,7 @@ export class ParseService<T> {
   }
 
   insert(data: any): Promise<IParseInsertableEntity> {
-    const url = `${this.parseUrl}/classes/${this.object}`;
+    const url = `${this.parseUrl}/classes/${this.objectType}`;
     console.log(`ParseService.insert.url: ${url}`);
 
     var relations = this.makeRelationsOfObject(data);
@@ -74,14 +78,10 @@ export class ParseService<T> {
     properties.forEach(prop => {
       var value = data[prop];
 
-      if (value instanceof Object) {
-        var objectProperties = Object.getOwnPropertyNames(value);
-
-        if (objectProperties.indexOf("objectId") >= 0) {
-          var relation = this.makeRelation(prop, value.className, value.objectId);
-          relations.push(relation);
-          delete data[prop];
-        }
+      if (this.isIRelationableEntity(value)) {
+        var relation = this.makeRelation(prop, value);
+        relations.push(relation);
+        delete data[prop];
       }
     });
 
@@ -89,8 +89,9 @@ export class ParseService<T> {
   }
 
   update(id: string, data: any): Promise<IParseUpdatableEntity> {
-    const url = `${this.parseUrl}/classes/${this.object}/${id}`;
+    const url = `${this.parseUrl}/classes/${this.objectType}/${id}`;
     console.log(`ParseService.update.url: ${url}`);
+
     return this.http.put(url, data, { headers: this.credentialHeaders })
       .toPromise()
       .then(response => response.json() as IParseUpdatableEntity)
@@ -98,8 +99,9 @@ export class ParseService<T> {
   }
 
   delete(id: string): Promise<T> {
-    const url = `${this.parseUrl}/classes/${this.object}/${id}`;
+    const url = `${this.parseUrl}/classes/${this.objectType}/${id}`;
     console.log(`ParseService.delete.url: ${url}`);
+
     return this.http.delete(url, { headers: this.credentialHeaders })
       .toPromise()
       .then(response => response.json() as T)
@@ -107,7 +109,7 @@ export class ParseService<T> {
   }
 
   addRelation(objectId: string, relation: string) {
-    const url = `${this.parseUrl}/classes/${this.object}/${objectId}`;
+    const url = `${this.parseUrl}/classes/${this.objectType}/${objectId}`;
     console.log(`ParseService.addRelation.url: ${url}`);
 
     return this.http.put(url, JSON.parse(relation), { headers: this.credentialHeaders })
@@ -116,21 +118,25 @@ export class ParseService<T> {
       .catch(this.handleError);
   }
 
-  private makeRelation(propertyRelation: string, relationClass: string, objectIdRelationClass: string): string {
-    return `
-    {
-       "${propertyRelation}": {
+  private isIRelationableEntity(object: any): boolean {
+    return object instanceof Object && object.objectId;
+  }
+
+  private makeRelation(keyRelation: string, valueRelation: IParseEntity): Object {
+    var relation = `{
+       "${keyRelation}": {
          "__op": "AddRelation",
          "objects": [
            {
              "__type": "Pointer",
-             "className": "${relationClass}",
-             "objectId": "${objectIdRelationClass}"
+             "className": "${valueRelation.constructor.name}",
+             "objectId": "${valueRelation.objectId}"
            }
          ]
        }
-     }
-    `;
+     }`;
+
+    return JSON.parse(relation);
   }
 
   private logRelationError(error: any): void {
