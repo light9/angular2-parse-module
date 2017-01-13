@@ -52,7 +52,7 @@ export class ParseService<T> {
 
     var relations = this.makeRelationsOfObject(data);
 
-    return this.http.post(url, data, { headers: this.credentialHeaders })
+    return this.http.post(url, JSON.parse(data), { headers: this.credentialHeaders })
       .toPromise()
       .then(response => {
         var inserted = response.json() as IParseInsertableEntity;
