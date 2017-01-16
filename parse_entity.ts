@@ -9,3 +9,11 @@ export interface IParseInsertableEntity extends IParseEntity {
 export interface IParseUpdatableEntity {
   updatedAt: string;
 }
+
+export interface IParseRelationableEntity extends IParseEntity {
+  relationClassName: string;
+}
+
+export interface IParseDeletableEntity {
+
+}

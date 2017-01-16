@@ -1,7 +1,7 @@
 import { Injectable } from "@angular/core";
 import { Http, Headers } from "@angular/http";
 import 'rxjs/add/operator/toPromise';
-import { IParseInsertableEntity, IParseUpdatableEntity, IParseEntity } from "./parse_entity";
+import { IParseInsertableEntity, IParseUpdatableEntity, IParseEntity, IParseRelationableEntity, IParseDeletableEntity } from "./parse_entity";
 
 @Injectable()
 export class ParseService<T> {
@@ -39,10 +39,14 @@ export class ParseService<T> {
       .catch(this.handleError);
   }
 
-  get(id: string): Promise<T> {
-    const url = `${this.parseUrl}/classes/${this.objectType}/${id}`;
-    console.log(`ParseService.get.url: ${url}`);
+  get(id: string, includeProperties?: string): Promise<T> {
+    var url = `${this.parseUrl}/classes/${this.objectType}/${id}`;
 
+    if (includeProperties) {
+      url = `${url}?include=${includeProperties}`;
+    }
+
+    console.log(`ParseService.get.url: ${url}`);
 
     return this.http.get(url, { headers: this.credentialHeaders })
       .toPromise()
@@ -54,43 +58,19 @@ export class ParseService<T> {
     const url = `${this.parseUrl}/classes/${this.objectType}`;
     console.log(`ParseService.insert.url: ${url}`);
 
-    var relations = this.makeRelationsOfObject(data);
+    data = this.compileRelationsOfObject(data);
 
     return this.http.post(url, data, { headers: this.credentialHeaders })
       .toPromise()
-      .then(response => {
-        var inserted = response.json() as IParseInsertableEntity;
-
-        relations.forEach(relation => {
-          this.addRelation(inserted.objectId, relation)
-            .catch(this.logRelationError);
-        });
-
-        return inserted;
-      })
+      .then(response => response.json() as IParseInsertableEntity)
       .catch(this.handleError);
-  }
-
-  private makeRelationsOfObject(data: Object) {
-    var relations = [];
-    var properties = Object.getOwnPropertyNames(data);
-
-    properties.forEach(prop => {
-      var value = data[prop];
-
-      if (this.isIRelationableEntity(value)) {
-        var relation = this.makeRelation(prop, value);
-        relations.push(relation);
-        delete data[prop];
-      }
-    });
-
-    return relations;
   }
 
   update(id: string, data: any): Promise<IParseUpdatableEntity> {
     const url = `${this.parseUrl}/classes/${this.objectType}/${id}`;
     console.log(`ParseService.update.url: ${url}`);
+
+    data = this.compileRelationsOfObject(data);
 
     return this.http.put(url, data, { headers: this.credentialHeaders })
       .toPromise()
@@ -98,49 +78,45 @@ export class ParseService<T> {
       .catch(this.handleError);
   }
 
-  delete(id: string): Promise<T> {
+  delete(id: string): Promise<IParseDeletableEntity> {
     const url = `${this.parseUrl}/classes/${this.objectType}/${id}`;
     console.log(`ParseService.delete.url: ${url}`);
 
     return this.http.delete(url, { headers: this.credentialHeaders })
       .toPromise()
-      .then(response => response.json() as T)
-      .catch(this.handleError);
-  }
-
-  addRelation(objectId: string, relation: string) {
-    const url = `${this.parseUrl}/classes/${this.objectType}/${objectId}`;
-    console.log(`ParseService.addRelation.url: ${url}`);
-
-    return this.http.put(url, JSON.parse(relation), { headers: this.credentialHeaders })
-      .toPromise()
-      .then(response => response.json() as IParseUpdatableEntity)
+      .then(response => response.json() as IParseDeletableEntity)
       .catch(this.handleError);
   }
 
   private isIRelationableEntity(object: any): boolean {
-    return object instanceof Object && object.objectId;
+    return object instanceof Object && object.objectId && object.relationClassName;
   }
 
-  private makeRelation(keyRelation: string, valueRelation: IParseEntity): Object {
+  private compileRelationsOfObject(data: Object): Object {
+    var properties = Object.getOwnPropertyNames(data);
+
+    properties.forEach(prop => {
+      var value = data[prop];
+
+      if (this.isIRelationableEntity(value)) {
+        var relation = this.makeRelation(prop, value);
+        data[prop] = relation;
+      }
+    });
+
+    return data;
+  }
+
+  private makeRelation(keyRelation: string, valueRelation: IParseRelationableEntity): Object {
     var relation = `{
-       "${keyRelation}": {
-         "__op": "AddRelation",
-         "objects": [
-           {
-             "__type": "Pointer",
-             "className": "${valueRelation.constructor.name}",
-             "objectId": "${valueRelation.objectId}"
-           }
-         ]
-       }
-     }`;
+                       "${keyRelation}": {
+                           "__type": "Pointer",
+                           "className": "${valueRelation.relationClassName}",
+                           "objectId": "${valueRelation.objectId}"
+                       }
+                     }`;
 
     return JSON.parse(relation);
-  }
-
-  private logRelationError(error: any): void {
-    console.error('An error ocurred on ParseService.relations', error);
   }
 
   private handleError(error: any): Promise<any> {
